@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Chat - Local Ollama Interface</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Link to Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar - Antigravity Workspace Inspired -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="glow-icon">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                    </svg>
+                </div>
+                <h1>Antigravity</h1>
+                <span class="badge">Chat</span>
+            </div>
+
+            <div class="action-section">
+                <button id="new-chat-btn" class="btn btn-primary btn-block">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" class="icon-left">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    New Session
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">System Status</h3>
+                <div class="status-card">
+                    <div class="status-row">
+                        <span class="status-label">Ollama Host:</span>
+                        <span id="host-status" class="status-value status-online">Checking...</span>
+                    </div>
+                    <div class="status-row">
+                        <span class="status-label">Active Model:</span>
+                        <span id="active-model-display" class="status-value text-truncate">None Selected</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">Active Context</h3>
+                <div class="context-card" id="context-info-card">
+                    <div class="context-empty-state" id="context-empty">
+                        <p>No extra context loaded.</p>
+                        <p class="sub-text">Click the "+" button in the chatbox to load a file or paste text.</p>
+                    </div>
+                    <div class="context-active-state hidden" id="context-active">
+                        <div class="context-badge">Active</div>
+                        <div class="context-details">
+                            <span class="context-size" id="context-size-display">0 bytes</span>
+                            <p class="context-preview" id="context-preview-display"></p>
+                        </div>
+                        <button id="clear-context-btn" class="btn btn-sm btn-danger btn-block">
+                            Clear Context
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="footer-info">
+                    <div class="avatar">AG</div>
+                    <div class="footer-text">
+                        <span class="user-name">User Local</span>
+                        <span class="system-env">development</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="main-content">
+            <!-- Header bar -->
+            <header class="chat-header">
+                <div class="header-left">
+                    <h2>Chat Session</h2>
+                    <div class="separator"></div>
+                    <div class="model-badge">
+                        <span class="pulse-indicator"></span>
+                        <span id="header-model-name">Loading models...</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button id="clear-history-btn" class="btn-icon" title="Clear Chat History">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Message Feed -->
+            <div class="chat-messages-container" id="chat-messages">
+                <!-- Welcome Message -->
+                <div class="welcome-container" id="welcome-message">
+                    <div class="welcome-logo">
+                        <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <h2>Welcome to Antigravity Chat</h2>
+                    <p>Connect and interact with your local Ollama models. To get started, select an active model from the dropdown below and type your message.</p>
+                </div>
+            </div>
+
+            <!-- Input area Dock -->
+            <div class="chat-input-container">
+                <div class="chat-input-dock">
+                    
+                    <!-- Context Button (+) -->
+                    <div class="context-button-wrapper">
+                        <button id="context-menu-btn" class="btn-dock" title="Add Context">
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </button>
+                        
+                        <!-- Popover context menu -->
+                        <div class="context-popover" id="context-popover">
+                            <div class="popover-header">Add Context</div>
+                            <div class="popover-options">
+                                <button class="popover-item" id="btn-upload-file">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path>
+                                        <polyline points="13 2 13 9 20 9"></polyline>
+                                    </svg>
+                                    Upload Text/Code File
+                                </button>
+                                <button class="popover-item" id="btn-paste-text">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                    Paste Text Context
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Dropdown Selector -->
+                    <div class="model-selector-wrapper">
+                        <select id="model-select" class="select-dock" title="Choose LLM Model">
+                            <option value="" disabled selected>Select Model...</option>
+                        </select>
+                        <div class="select-arrow">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Message Textarea -->
+                    <div class="textarea-wrapper">
+                        <textarea id="user-input" rows="1" placeholder="Type a message or press Shift+Enter for newline..." autofocus></textarea>
+                    </div>
+
+                    <!-- Send Button (Arrow) -->
+                    <div class="send-button-wrapper">
+                        <button id="send-btn" class="btn-send" title="Send Message" disabled>
+                            <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hidden File Input for context uploads -->
+    <input type="file" id="file-input" class="hidden" accept=".txt,.md,.py,.js,.json,.html,.css,.yaml,.yml,.ini,.conf">
+
+    <!-- Paste Text Modal -->
+    <div class="modal-backdrop hidden" id="text-modal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Paste Raw Context</h3>
+                <button class="btn-close" id="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-desc">Paste code snippets, documentation, logs, or system instructions to append as context for the session.</p>
+                <textarea id="modal-text-input" placeholder="Paste context here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                <button class="btn btn-primary" id="modal-save-btn">Apply Context</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script file -->
+    <script src="app.js"></script>
+</body>
+</html>
